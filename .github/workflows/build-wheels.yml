@@ -59,7 +59,7 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
     - uses: docker/setup-qemu-action@v1
-      if: ${{ matrix.arch == 'aarch64' }}
+      if: ${{ matrix.platform == 'aarch64' }}
       name: Set up QEMU
     - name: Pin Numpy version
       run: |
