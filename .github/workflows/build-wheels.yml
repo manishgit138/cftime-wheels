@@ -26,11 +26,14 @@ jobs:
       matrix:
         python-version: ["3.6", "3.7", "3.8", "3.9"]
         os: [ubuntu-latest, macos-latest]
-        platform: [x64, x32]
+        platform: [x64, x32, aarch64]
         MB_ML_VER: [1,2014]
         exclude:
           - os: macos-latest  
             platform: x32
+          - os: ubuntu-latest
+            platform: aarch64
+          
     env:
       REPO_DIR: cftime
       PKG_NAME: cftime
@@ -74,11 +77,16 @@ jobs:
       run: |
         if [ "schedule" == "${{ github.event_name }}" ] || [ "master" == "$BUILD_COMMIT" ]; then echo "TOKEN=$SCIPY_WHEELS_NIGHTLY_ACCESS" >> $GITHUB_ENV; else echo "TOKEN=$MULTIBUILD_WHEELS_STAGING_ACCESS" >> $GITHUB_ENV; fi
         if [ "x32" == "${{ matrix.platform }}" ]; then echo "PLAT=i686" >> $GITHUB_ENV; else echo "PLAT=x86_64" >> $GITHUB_ENV; fi
+        if [ "aarch64" == "${{ matrix.platform }}" ]; then echo "PLAT=aarch64" >> $GITHUB_ENV; else echo "PLAT=aarch64" >> $GITHUB_ENV; fi
         if [ "macos-latest" == "${{ matrix.os }}" ]; then echo "TRAVIS_OS_NAME=osx" >> $GITHUB_ENV; else echo "TRAVIS_OS_NAME=${{ matrix.os }}" >> $GITHUB_ENV; fi
         if [ "schedule" == "${{ github.event_name }}" ]; then echo "TRAVIS_EVENT_TYPE=cron" >> $GITHUB_ENV; else echo "TRAVIS_EVENT_TYPE=${{ github.event_name }}" >> $GITHUB_ENV; fi
         if [ "schedule" == "${{ github.event_name }}" ]; then echo "BUILD_COMMIT=master" >> $GITHUB_ENV; else echo "BUILD_COMMIT=$BUILD_COMMIT" >> $GITHUB_ENV; fi
     - name: Setup Special Environment variables for Linux
       if: startsWith(matrix.os,'ubuntu') && matrix.MB_ML_VER == 2010
+      run: |
+        echo "DOCKER_TEST_IMAGE=$(echo multibuild/xenial_$PLAT)" >> $GITHUB_ENV
+    - name: Setup Special Environment variables for aarch64
+      if: startsWith(matrix.platform,'aarch64') && matrix.MB_ML_VER == 2014
       run: |
         echo "DOCKER_TEST_IMAGE=$(echo multibuild/xenial_$PLAT)" >> $GITHUB_ENV
     - name: Print some Environment variable
